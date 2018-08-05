@@ -17,19 +17,38 @@
               v-model='targetSpecies'
               :items="speciesList"
               item-text= 'scientificName'
-              label="Target Species">
-
+              label="Target Species"
+              @change='changedSpecies'>
             </v-select>
           </v-card-text>
           <v-card-text class='text-xs-left'>
             Location: St. John's Marsh
           </v-card-text>
           <v-card-actions>
-            <v-btn style='background-color:#008066; color: white'>
-              <v-icon left>navigate_next</v-icon>Next Image</v-btn>
+            <v-tooltip bottom>
+              <v-btn slot='activator'
+                @click.native='undoAnnotation'
+                class='mr-1'
+                icon
+                style='background-color:#008066; color: white'>
+                <v-icon>undo</v-icon></v-btn>
+              <span>Undo last annotation</span>
+            </v-tooltip>
+
+            <v-tooltip bottom>
+              <v-btn slot='activator' icon style='background-color:#008066; color: white'>
+                <v-icon>navigate_next</v-icon></v-btn>
+              <span>Move to next image</span>
+            </v-tooltip>
+
             <v-spacer></v-spacer>
-            <v-btn @click='dialog=true' style='background-color:#008066; color: white'>
-              <v-icon left>add_circle</v-icon>Add Species</v-btn>
+            <v-tooltip bottom>
+              <v-btn slot='activator'
+                     @click='dialog=true'
+                     icon style='background-color:#008066; color: white'>
+                <v-icon>add</v-icon></v-btn>
+              <span>Add a new species</span>
+            </v-tooltip>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -50,7 +69,7 @@
                   <v-text-field
                         label="Species Name"
                         required
-                        hint='Latin species name'
+                        hint='Scientific name'
                         outline
                         persistent-hint>
                   </v-text-field>
@@ -122,7 +141,8 @@
         selectedY: 0,
         boxWidth: 50,
         dialog: false,
-        targetSpecies: null
+        targetSpecies: null,
+        annotations: []
       }
     },
 
@@ -135,6 +155,18 @@
       clicked (evt) {
       },
 
+      undoAnnotation () {
+        if (this.annotations.length>0) {
+          var garbage = this.annotations.pop()
+          var id = garbage.x + '-' + garbage.y
+          $('#'+id).remove()
+        }
+      },
+
+      changedSpecies (species) {
+        this.$store.commit('setTargetSpecies', species)
+      },
+
       addTag() {
         var id = this.selectedX + '-' +  this.selectedY
         $('#zoombox').append('<div id=' + id + '></div>')
@@ -144,6 +176,12 @@
         $('#'+id).css({'top': this.selectedY-this.boxWidth/2,
           'left': this.selectedX-this.boxWidth/2})
         $('#'+id).css({'width': this.boxWidth, 'height': this.boxWidth})
+        var annotation = {
+          x: this.selectedX,
+          y: this.selectedY,
+          species: this.targetSpecies
+        }
+        this.annotations.push(annotation)
       },
 
       imageClicked(e) {
@@ -156,7 +194,6 @@
           // Ensure we cannot annotate outside of the image.
           if (this.selectedX >0 && this.selectedX<imgWidth && this.selectedY>0 &&
             this.selectedY<imgHeight) {
-            console.log(this.selectedX)
             this.addTag()
           }
         }
@@ -179,8 +216,8 @@
       },
 
       tagColor () {
-        var codeColor = this.speciesDict[this.targetSpecies].codeColor
-        console.log(codeColor)
+        var colorName = this.speciesDict[this.targetSpecies].codeColor
+        var codeColor = this.$store.state.colors[colorName]
         return codeColor
       },
 

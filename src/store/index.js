@@ -28,6 +28,10 @@ export default new Vuex.Store ({
 
     targetSpecies: phragmites.scientificName,
 
+    targetSpeciesObj: phragmites,
+
+    codeColor: phragmites.codeColor,
+
     speciesList: [phragmites, buckthorn],
 
     colors: {
@@ -53,6 +57,16 @@ export default new Vuex.Store ({
     setSpeciesList(state, speciesList) {
      state.speciesList = speciesList
     },
+
+    setTargetSpecies (state, speciesScientificName) {
+        for (var i=0; i<state.speciesList.length; i++) {
+            if (state.speciesList[i].scientificName == speciesScientificName) {
+                state.targetSpeciesObj = state.speciesList[i]
+                state.targetSpecies = speciesScientificName
+                state.codeColor = state.targetSpeciesObj.codeColor
+            }
+        }
+    }
 
   },
 
