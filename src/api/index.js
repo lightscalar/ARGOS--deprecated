@@ -1,7 +1,7 @@
 import axios from 'axios'
 window.axios = axios
 
-const BASE_URL = 'http://127.0.0.1:1776'
+const BASE_URL = 'http://127.0.0.1:2005'
 
 // Basic API for talking to the webserver API.
 export default {

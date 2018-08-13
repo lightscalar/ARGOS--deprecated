@@ -13,13 +13,6 @@
       <v-flex xs3 pa-2>
         <v-card>
           <v-card-text>
-            <v-select
-              v-model='targetSpecies'
-              :items="speciesList"
-              item-text= 'scientificName'
-              label="Target Species"
-              @change='changedSpecies'>
-            </v-select>
           </v-card-text>
           <v-card-text class='text-xs-left'>
             Location: St. John's Marsh
@@ -57,69 +50,6 @@
 
 
     <v-layout row justify-center>
-      <v-dialog v-model="dialog" persistent max-width="500px">
-        <v-card>
-          <v-card-title style='background-color: #008066; color: white'>
-            <span class="headline">Add New Species</span>
-          </v-card-title>
-          <v-card-text>
-            <v-container grid-list-md>
-              <v-layout wrap>
-                <v-flex xs12 sm6>
-                  <v-text-field
-                        label="Species Name"
-                        required
-                        hint='Scientific name'
-                        outline
-                        persistent-hint>
-                  </v-text-field>
-                </v-flex>
-                <v-flex xs12 sm6>
-                  <v-text-field
-                        label="Shortcut Name"
-                        persistent-hint
-                        outline
-                        hint="Shortcut code used for GPS annotation">
-                  </v-text-field>
-                </v-flex>
-                <v-flex xs12 sm6>
-                  <v-select
-                    outline
-                    :items="['Invasive', 'Native']"
-                    label="Species Type"
-                    required
-                    ></v-select>
-                </v-flex>
-                <v-flex xs12 sm6>
-                  <v-select
-                    outline
-                    :items="['Red', 'Pink', 'Purple',
-                    'Indigo', 'Blue', 'Cyan', 'Teal',
-                    'Green', 'Lime', 'Yellow', 'Orange',
-                    'Deep-Orange', 'Blue-Grey', 'Brown']"
-                    label="Coding Color"
-                    required
-                    ></v-select>
-                </v-flex>
-                <v-flex xs12>
-                  <v-textarea
-                    outline
-                    name="input-7-1"
-                    label="Species Notes"
-                    value=""
-                    hint="Anything interesting about this plant?"
-                    ></v-textarea>
-                </v-flex>
-              </v-layout>
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" flat @click.native="dialog = false">Close</v-btn>
-            <v-btn color="blue darken-1" flat @click.native="dialog = false">Save</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </v-layout>
 
   </v-container>
@@ -203,22 +133,7 @@
     computed: {
 
       speciesList () {
-        return this.$store.state.speciesList
-      },
-
-      speciesDict () {
-        // Dictionary version of species list, indexed by scientificName
-        var speciesDict = {}
-        for (var i=0; i<this.speciesList.length; i++) {
-          speciesDict[this.speciesList[i].scientificName] = this.speciesList[i]
-        }
-        return speciesDict
-      },
-
-      tagColor () {
-        var colorName = this.speciesDict[this.targetSpecies].codeColor
-        var codeColor = this.$store.state.colors[colorName]
-        return codeColor
+        return this.$store.state.plantList
       },
 
     },

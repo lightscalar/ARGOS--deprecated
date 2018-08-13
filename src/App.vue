@@ -1,15 +1,37 @@
 <template>
 
   <v-app id="app">
+
     <v-toolbar app class='elevation-0' style='background-color: #008066'>
+
       <img src='./assets/logo@2x.png' height=100 style='margin-left:32px; margin-top:23px'>
       <h1 class='logo'>ARGOS | Automated RecoGnition Of Species</h1>
       <v-spacer></v-spacer>
       <h1 class='white--text'>Target Species { &nbsp; </h1>
+
+      <v-tooltip bottom>
       <v-chip
         label
-        v-bind:style="{backgroundColor: codeColor, color: textColor}">{{targetSpecies}}</v-chip>
+        @click.native="openLibrary"
+        slot='activator'
+        v-bind:style="{backgroundColor: codeColor, color: textColor}">
+        {{targetPlantName}}
+      </v-chip>
+        <span>Current annotation species—click to change</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <v-btn slot='activator'
+               @click.native='openNewSpecies'
+               class='mr-1'
+               icon
+               style='background-color:#ffffff; color: #008066'>
+          <v-icon>add</v-icon></v-btn>
+        <span>Add a new species</span>
+      </v-tooltip>
+
     </v-toolbar>
+
     <v-content>
       <v-container fluid>
         <router-view></router-view>
@@ -21,6 +43,10 @@
       </v-footer>
     </v-content>
 
+    <!-- MODALS -->
+    <new-plant></new-plant>
+    <plant-library></plant-library>
+
   </v-app>
 
 
@@ -29,7 +55,12 @@
 </template>
 
 <script>
+
+import NewPlant from './components/NewPlant'
+import PlantLibrary from './components/PlantLibrary'
+
 export default {
+  components: {NewPlant, PlantLibrary},
   name: 'App',
   data () {
     return {
@@ -40,9 +71,7 @@ export default {
   computed: {
 
     codeColor () {
-      var colorName = this.$store.state.codeColor
-      var hexCode = this.$store.state.colors[colorName]
-      return hexCode
+      return this.$store.state.annotationColor
     },
 
     textColor () {
@@ -57,7 +86,7 @@ export default {
         }
         var rgb = hexToRgb(this.codeColor)
         var r = rgb.r; var g = rgb.g; var b = rgb.b
-        if (r*0.299 + g*0.587 + b*0.114 > 186) {
+        if (r*0.299 + g*0.587 + b*0.114 > 127) {
           return '#000000'
         } else {
           return '#ffffff'
@@ -68,10 +97,26 @@ export default {
 
     },
 
-    targetSpecies () {
-      return this.$store.state.targetSpecies
+    targetPlantName () {
+      return this.$store.state.targetPlantName
+    },
+
+  },
+
+  methods: {
+    openNewSpecies () {
+      console.log('Opening!')
+      this.$store.commit('openNewSpecies')
+    },
+
+    openLibrary () {
+        this.$store.commit('openLibrary')
     }
 
+  },
+
+  mounted () {
+    this.$store.dispatch('listPlants')
   }
 }
 </script>

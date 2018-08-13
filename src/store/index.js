@@ -21,41 +21,96 @@ var buckthorn = {
       notes: 'Clumpy, in bushes.'
     }
 
+var emptySpecies = {
+  structuralCategory: 'Tree',
+  category: 'Invasive',
+  scientificName: '',
+  commonName: '',
+  codeName: '',
+  annotationColor: '#ffcc33'
+}
 
 export default new Vuex.Store ({
 
   state: {
 
-    targetSpecies: phragmites.scientificName,
+    // Modal control variables.
+    newSpeciesOpen: false,
+    libraryIsOpen: false,
+    editPlantIsOpen: false,
 
-    targetSpeciesObj: phragmites,
+    // Species variables.
+    targetPlant: $.extend(true, {}, emptySpecies),
 
-    codeColor: phragmites.codeColor,
+    // emptySpecies: JSON.parse(JSON.stringify(emptySpecies)),
+    emptyPlant: $.extend(true, {}, emptySpecies),
+    targetPlantName: 'Click Here to Set Plant Species',
+    annotationColor: '#f3f3f3',
 
-    speciesList: [phragmites, buckthorn],
+    plantList: [],
 
-    colors: {
-      'Red':'#F44336',
-      'Pink': '#e91e63',
-      'Purple': '#9c27b0',
-      'Indigo': '#3f51b5',
-      'Blue': '#2196f3',
-      'Cyan': '#00bcd4',
-      'Teal': '#009688',
-      'Green': '#4caf50',
-      'Lime': '#cddc39',
-      'Yellow': '#ffeb3b',
-      'Orange': '#ff9800',
-      'Deep-Orange': '#ff5722',
-      'Brown': '#795548',
-      'Blue-Grey': '#607d8b',
+    plantsByStructure: {
+      tree: [],
+      shrub: [],
+      graminoid: [],
+      forb: []
     }
+
   },
 
   mutations: {
 
-    setSpeciesList(state, speciesList) {
-     state.speciesList = speciesList
+    setPlantList(state, plantList) {
+      state.plantList = plantList
+      state.plantsByStructure = {tree:[], shrub: [], graminoid:[], forb:[]}
+      // Also populate the plantsByStructure object.
+      for (var i=0; i<plantList.length; i++) {
+        var plant = plantList[i]
+        var structCat = plant.structuralCategory.toLowerCase()
+        state.plantsByStructure[structCat].push(plant)
+      }
+    },
+
+    setPlant(state, plant) {
+      state.targetPlantName = plant.scientificName
+      state.targetPlant = plant
+      state.annotationColor = plant.annotationColor
+    },
+
+    setPlantName(state, plantName) {
+      state.targetPlantName = plantName
+    },
+
+    setPlantCategory(state, category) {
+      state.emptyPlant['structuralCategory'] = category
+    },
+
+    openNewSpecies(state) {
+      state.newSpeciesOpen = true
+    },
+
+    closeNewSpecies(state) {
+      state.newSpeciesOpen = false
+    },
+
+    closeEditPlant(state) {
+      state.editPlantIsOpen = false
+    },
+
+    openEditPlant(state) {
+      state.editPlantIsOpen = true
+    },
+
+    openLibrary(state) {
+      state.libraryIsOpen = true
+    },
+
+    closeLibrary(state) {
+      state.libraryIsOpen = false
+    },
+
+    resetNewSpecies(state) {
+      state.emptyPlant = $.extend(true, {}, emptySpecies)
     },
 
     setTargetSpecies (state, speciesScientificName) {
@@ -72,69 +127,36 @@ export default new Vuex.Store ({
 
   actions: {
 
-    saveAnnotation (context, annotations) {
-      console.log(annotations)
-      api.postResource('annotations', annotations).then(function (resp) {
+    savePlant (context, plant) {
+      api.postResource('plants', plant).then(function (resp) {
+        context.commit('setPlant', plant)
+        context.dispatch('listPlants')
+      })
+    },
+
+    listPlants (context) {
+      api.listResource('plants').then( function (resp) {
         console.log(resp.data)
+        context.commit('setPlantList', resp.data)
       })
     },
 
-    getSentence (context, sentence_id) {
-      api.getResource('sentence', sentence_id).then( function (resp) {
-        context.commit('setSentence', resp.data)
+    updatePlant (context, plant) {
+      api.putResource('plant', plant).then (function (resp) {
+        // DO STUFF?
+        context.dispatch('listPlants')
       })
     },
 
-    getNumberAnnotations (context) {
-      api.listResource('number').then( function (resp) {
-        context.commit('setNumber', resp.data)
+    deletePlant (context, plant) {
+      api.deleteResource('plant', plant).then (function (resp) {
+        context.dispatch('listPlants')
+        // Set current plant to empty plant.
+        var empty = $.extend(true, {}, emptySpecies)
+        context.commit('setPlant', empty)
+        context.commit('setPlantName', 'Click Here to Set Plant Species')
       })
-    },
-
-    getAnalysis (context) {
-      var data = {}
-      data['text'] = context.state.currentSentence['text']
-      api.postResource('analysis', data).then( function (resp) {
-        context.commit('setAnalysis', resp.data)
-      })
-    },
-
-    submitCommand (context, command) {
-      var data = {}
-      data['command'] = command
-      api.postResource('command', data).then( function (resp) {
-        context.commit('setStatus', resp.data)
-      })
-    },
-
-    getAccuracies (context) {
-      api.listResource('accuracies').then( function (resp) {
-        context.commit('setAccuracies', resp.data)
-      })
-    },
-
-    getStatus (context) {
-      api.listResource('command').then( function (resp) {
-        console.log(resp.data.train)
-        context.commit('setStatus', resp.data)
-      })
-
-    },
-
-    getRandomReview (context) {
-      api.listResource('reviews').then( function (resp) {
-        console.log(resp.data)
-        context.commit('setReviewText', resp.data.text)
-      })
-
-    },
-
-    submitReview (context, reviewText) {
-      api.postResource('reviews', {'text':reviewText}).then( function (resp) {
-        context.commit('setReview', resp.data)
-        console.log(resp.data)
-      })
-    },
+    }
 
   },
 
