@@ -12,7 +12,7 @@
                 <v-select
                   outline
                   :items="['Tree', 'Shrub', 'Graminoid', 'Forb']"
-                  label="Structural Category"
+                  label="Plant Physiognomy"
                   required
                   v-model='targetPlant.structuralCategory'
                   ></v-select>
@@ -21,7 +21,7 @@
                 <v-select
                   outline
                   :items="['Native', 'Invasive']"
-                  label="Plant Physiognomy"
+                  label="Category"
                   required
                   v-model='targetPlant.category'
                   ></v-select>
