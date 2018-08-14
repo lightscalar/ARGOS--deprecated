@@ -2,6 +2,7 @@
 from config import *
 
 from bson import ObjectId
+from exiftool import ExifTool
 from pymongo import MongoClient
 
 # Open up a database instance.
@@ -17,6 +18,7 @@ db = client.ARGOS  # database
 plant_collection = db.plants
 annotations_collection = db.annotations
 flight_collection = db.flights
+image_collection = db.images
 
 
 def create_plant(plant):
@@ -45,3 +47,17 @@ def list_plants():
     for plant in plant_list:
         plant["_id"] = str(plant["_id"])
     return plant_list
+
+
+def create_image_doc(date, flight_name, image_loc):
+    """Add a new image to the database"""
+    with ExifTool() as et:
+        metadata = et.get_metadata(image_loc)
+    image_doc = {
+        "date": date,
+        "flight_name": flight_name,
+        "image_loc": image_loc,
+        "metadata": metadata,
+        "annotated": False
+    }
+    return image_doc

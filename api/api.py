@@ -45,17 +45,26 @@ class Plant(Resource):
         return plant
 
     def delete(self, plant_id):
-        '''Delete this plant.'''
+        """Delete this plant."""
         print(plant_id)
         delete_plant(plant_id)
 
-class Images(Resource):
-    """Serve requested image."""
 
-    def get(Resource):
-        """Return current image."""
-        with open("dji_00001.png", "rb") as bites:
-            return send_file(io.BytesIO(bites.read()), mimetype="image/png")
+class Images(Resource):
+    """Manage all flights/dates."""
+
+    def get():
+        """List all the available images."""
+        pass
+
+
+# class Images(Resource):
+#     """Serve requested image."""
+
+#     def get(Resource):
+#         """Return current image."""
+#         with open("dji_00001.png", "rb") as bites:
+#             return send_file(io.BytesIO(bites.read()), mimetype="image/png")
 
 
 # ADD RESOURCE ROUTES.
