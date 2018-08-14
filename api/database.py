@@ -58,6 +58,6 @@ def create_image_doc(date, flight_name, image_loc):
         "flight_name": flight_name,
         "image_loc": image_loc,
         "metadata": metadata,
-        "annotated": False
+        "annotated": False,
     }
     return image_doc
