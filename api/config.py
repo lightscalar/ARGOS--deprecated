@@ -9,4 +9,4 @@ user = getpass.getuser()
 if user == 'mjl':
     IMAGE_LOCATION = "/Users/mjl/Dropbox (Personal)/MAC/DEPOT/MNFI/FLIGHTS"
 elif user == 'jgc':
-    IMAGE_LOCATION = '/Users/jgc/data/FLIGHTS'
+    IMAGE_LOCATION = '/Users/jgc/dev/data/FLIGHTS'
