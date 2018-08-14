@@ -41,4 +41,3 @@ if __name__ == "__main__":
             # Drop those documents into the MongoDB.
             if len(docs) > 0:
                 image_collection.insert_many(docs)
-

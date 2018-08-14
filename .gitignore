@@ -32,6 +32,9 @@ data/db
 *.npy
 *.state
 *.id2word
+*.png
+*.JPP
+*.jpg
 
 # Distribution / packaging
 .Python

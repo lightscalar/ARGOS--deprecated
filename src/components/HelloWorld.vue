@@ -6,6 +6,7 @@
       <v-flex xs9 @click.native='clicked' pa-2>
         <div id='zoombox' style='position: relative'>
           <img id='image' src='static/images/dji_00001.png'
+               style='border: 4px solid #888888'
                width='100%'>
         </div>
       </v-flex>

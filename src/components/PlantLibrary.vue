@@ -30,7 +30,7 @@
               <v-expansion-panel-content
                 v-for="(item,i) in structuralCategories"
                 :key="i"
-                style='background-color: #f0f0f0; color: #008066'
+                style='background-color: #f0f0f0; color: #909090'
                 >
                 <div slot="header"><h2>{{item.title}}s</h2></div>
                 <v-card>
