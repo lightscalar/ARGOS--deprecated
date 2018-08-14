@@ -6,10 +6,7 @@ from exiftool import ExifTool
 from pymongo import MongoClient
 
 # Open up a database instance.
-if not IN_DOCKER:
-    client = MongoClient()
-else:
-    pass  # add Docker db connection here.
+client = MongoClient()
 
 # Connect to the database.
 db = client.ARGOS  # database
