@@ -2,8 +2,14 @@
 from config import *
 
 from bson import ObjectId
+from datetime import datetime
 from exiftool import ExifTool
+from ipdb import set_trace as debug
+import numpy as np
+import pymongo
 from pymongo import MongoClient
+import os
+import re
 
 # Open up a database instance.
 client = MongoClient()
@@ -58,3 +64,41 @@ def create_image_doc(date, flight_name, image_loc):
         "annotated": False,
     }
     return image_doc
+
+
+def flight_summaries():
+    """Returns abbreviated flight summaries — just the facts, ma'am."""
+
+    # Define a date regex.
+    ymd = r"(\d+).(\d+).(\d+)"
+    available_dates = np.array(image_collection.distinct("date", {}))
+    available_dates_ = []
+    idx = np.argsort(available_dates)
+    available_dates = available_dates[idx]
+    available_dates_ = []
+    data = []
+
+    # Loop over dates of data collection.
+    for date in available_dates:
+        on_this_day = {}
+        m = re.search(ymd, date)
+        date_ = datetime(int(m[1]), int(m[2]), int(m[3])).strftime("%B %d, %Y")
+        on_this_day["date"] = date_
+        on_this_day["flights"] = []
+        flights = image_collection.distinct("flight_name", {"date": date})
+
+        # Loop over flights on those dates.
+        for flight in flights:
+            this_flight = {"flight_name": flight}
+            flight_images = list(
+                image_collection.find(
+                    {"date": date, "flight_name": flight}, {"image_loc": 1}
+                )
+            )
+            for img in flight_images:
+                img["_id"] = str(img["_id"])
+                img["image_loc_short"] = os.path.basename(img["image_loc"])
+            this_flight["images"] = sorted(flight_images, key=lambda x:x['image_loc_short'])
+            on_this_day["flights"].append(this_flight)
+        data.append(on_this_day)
+    return data

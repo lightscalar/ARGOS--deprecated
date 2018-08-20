@@ -3,66 +3,42 @@
   <v-container fluid>
     <v-layout row>
 
-      <v-flex xs9 @click.native='clicked' pa-2>
+      <v-flex xs8 @click.native='clicked' pa-2>
         <div id='zoombox' style='position: relative'>
-          <img id='image' src='static/images/dji_00001.png'
-               style='border: 4px solid #888888'
+          <!-- <img id='image' src='static/images/dji_00001.png' -->
+          <!--      style='border: 4px solid #888888' -->
+          <!--      width='100%'> -->
+          <img id='image'
+               v-if='imageLocation != "NO_IMAGE"'
+               :src="imageLocation"
+               v-on:load='addZoom'
                width='100%'>
+          <div v-else>
+            <h2>Please Select an Image.</h2>
+            <img src='../assets/arrow.png' width='50%' style='float:right; margin-top:-125px'>
+          </div>
+
         </div>
       </v-flex>
 
-      <v-flex xs3 pa-2>
-        <v-card>
-          <v-card-text>
-          </v-card-text>
-          <v-card-text class='text-xs-left'>
-            Location: St. John's Marsh
-          </v-card-text>
-          <v-card-actions>
-            <v-tooltip bottom>
-              <v-btn slot='activator'
-                @click.native='undoAnnotation'
-                class='mr-1'
-                icon
-                style='background-color:#008066; color: white'>
-                <v-icon>undo</v-icon></v-btn>
-              <span>Undo last annotation</span>
-            </v-tooltip>
-
-            <v-tooltip bottom>
-              <v-btn slot='activator' icon style='background-color:#008066; color: white'>
-                <v-icon>navigate_next</v-icon></v-btn>
-              <span>Move to next image</span>
-            </v-tooltip>
-
-            <v-spacer></v-spacer>
-            <v-tooltip bottom>
-              <v-btn slot='activator'
-                     @click='dialog=true'
-                     icon style='background-color:#008066; color: white'>
-                <v-icon>add</v-icon></v-btn>
-              <span>Add a new species</span>
-            </v-tooltip>
-          </v-card-actions>
-        </v-card>
+      <v-flex xs4>
+        <flight-library></flight-library>
       </v-flex>
 
-    </v-layout>
-
-
-    <v-layout row justify-center>
     </v-layout>
 
   </v-container>
 
 </template>
 
+
 <script>
   // import Component from "../component_location"
+  import FlightLibrary from "./FlightLibrary"
 
   export default {
 
-    components: {},
+    components: {FlightLibrary},
 
     props: [],
 
@@ -73,7 +49,8 @@
         boxWidth: 50,
         dialog: false,
         targetSpecies: null,
-        annotations: []
+        annotations: [],
+        tagColor: '#8E24AA'
       }
     },
 
@@ -82,6 +59,11 @@
     },
 
     methods: {
+
+      addZoom() {
+        $('#image').elevateZoom({scrollZoom: true, tint: true, tintOpacity: 0.1})
+        $(document).bind('click', '#zoomPicture', this.imageClicked)
+      },
 
       clicked (evt) {
       },
@@ -107,6 +89,8 @@
         $('#'+id).css({'top': this.selectedY-this.boxWidth/2,
           'left': this.selectedX-this.boxWidth/2})
         $('#'+id).css({'width': this.boxWidth, 'height': this.boxWidth})
+        console.log(this.selectedX)
+        console.log(this.selectedY)
         var annotation = {
           x: this.selectedX,
           y: this.selectedY,
@@ -137,11 +121,18 @@
         return this.$store.state.plantList
       },
 
+      imageLocation () {
+        if (this.$store.state.imageLocation != '') {
+          return this.$store.state.imageServerUrl + '/' + this.$store.state.imageLocation
+        } else {
+          return 'NO_IMAGE'
+        }
+      }
+
     },
 
     mounted () {
       $('#image').elevateZoom({scrollZoom: true, tint: true, tintOpacity: 0.1})
-      $(document).bind('click', '#zoomPicture', this.imageClicked)
       this.targetSpecies = this.$store.state.targetSpecies
     }
   }

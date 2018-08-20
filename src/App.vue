@@ -7,7 +7,8 @@
       <img src='./assets/logo@2x.png' height=100 style='margin-left:32px; margin-top:23px'>
       <h1 class='logo'>ARGOS | Automated RecoGnition Of Species</h1>
       <v-spacer></v-spacer>
-      <h1 class='white--text'>Target Species { &nbsp; </h1>
+
+      <!-- <h1 class='white--text'>Target Species { &nbsp; </h1> -->
 
       <v-tooltip bottom>
       <v-chip
@@ -20,15 +21,15 @@
         <span>Current annotation species—click to change</span>
       </v-tooltip>
 
-      <v-tooltip bottom>
-        <v-btn slot='activator'
-               @click.native='openNewSpecies'
-               class='mr-1'
-               icon
-               style='background-color:#ffffff; color: #008066'>
-          <v-icon>add</v-icon></v-btn>
-        <span>Add a new species</span>
-      </v-tooltip>
+      <!-- <v-tooltip bottom> -->
+      <!--   <v-btn slot='activator' -->
+      <!--          @click.native='openNewSpecies' -->
+      <!--          class='mr-1' -->
+      <!--          icon -->
+      <!--          style='background-color:#ffffff; color: #008066'> -->
+      <!--     <v-icon>add</v-icon></v-btn> -->
+      <!--   <span>Add a new species</span> -->
+      <!-- </v-tooltip> -->
 
     </v-toolbar>
 
@@ -36,8 +37,8 @@
       <v-container fluid>
         <router-view></router-view>
       </v-container>
-      <v-footer app style='background-color: #008066; height:60px'>
-        <small class='white--text' style='margin-left:55px'>
+      <v-footer app style='background-color: #008066; height:40px'>
+        <small class='white--text' style='margin-left:55px; margin-top: 3px'>
           Copyright 2018, Michigan Aerospace Corporatation. Ann Arbor, MI.
         </small>
       </v-footer>
@@ -117,19 +118,20 @@ export default {
 
   mounted () {
     this.$store.dispatch('listPlants')
+    this.$store.dispatch('listImages')
   }
 }
 </script>
 
 
 <style>
+html, body {margin: 0; height: 100%; overflow: hidden; margin-top:-18px}
 #app {
-  <!-- font-family: 'Avenir', Helvetica, Arial, sans-serif; -->
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 40px;
+  margin-top: 10px;
 }
 .logo {
   color: #ffffff;

@@ -14,7 +14,7 @@
                   :items="['Tree', 'Shrub', 'Graminoid', 'Forb']"
                   label="Plant Physiognomy"
                   required
-                  v-model='targetPlant.structuralCategory'
+                  v-model='targetPlant.physiognomy'
                   ></v-select>
               </v-flex>
               <v-flex xs12>
@@ -31,7 +31,7 @@
                   label="Scientific Name"
                   hint="E.g., Phragmites australis subsp americanus"
                   outline
-                  v-model='targetPlant.scientificName'
+                  v-model='targetPlant.scientific_name'
                   required>
                 </v-text-field>
               </v-flex>
@@ -39,14 +39,14 @@
                 <v-text-field
                   label="Common Name"
                   outline
-                  v-model='targetPlant.commonName'
+                  v-model='targetPlant.common_name'
                   hint="E.g., Reed"></v-text-field>
               </v-flex>
               <v-flex xs12>
                 <v-text-field
                   label="Species Code"
                   outline
-                  v-model='targetPlant.codeName'
+                  v-model='targetPlant.species_codes'
                   hint="E.g., PA (note: case insensitive)">
                 </v-text-field>
               </v-flex>
@@ -81,60 +81,60 @@
 </template>
 
 <script>
-  // import Component from "../component_location"
+// import Component from "../component_location"
 
-  export default {
+export default {
 
-    components: {},
+  components: {},
 
-    props: [],
+  props: [],
 
-    data () {
-      return {
-      }
+  data () {
+    return {
+    }
+  },
+
+  watch: {
+
+  },
+
+  methods: {
+
+    closeDialog () {
+      this.$store.commit('closeEditPlant')
     },
 
-    watch: {
-
+    updatePlant () {
+      this.$store.dispatch('updatePlant', this.targetPlant)
+      this.$store.commit('setPlant', this.targetPlant)
+      this.closeDialog()
     },
 
-    methods: {
-
-      closeDialog () {
-        this.$store.commit('closeEditPlant')
-      },
-
-      updatePlant () {
-        this.$store.dispatch('updatePlant', this.targetPlant)
-        this.$store.commit('setPlant', this.targetPlant)
-        this.closeDialog()
-      },
-
-      deletePlant () {
-        this.$store.dispatch('deletePlant', this.targetPlant['_id'])
-        this.closeDialog()
-      }
-
-    },
-
-    computed: {
-
-      editPlantIsOpen () {
-        return this.$store.state.editPlantIsOpen
-      },
-
-      targetPlant () {
-        // Return an empty species object.
-        return this.$store.state.targetPlant
-      }
-
-    },
-
-    mounted () {
-
+    deletePlant () {
+      this.$store.dispatch('deletePlant', this.targetPlant['_id'])
+      this.closeDialog()
     }
 
+  },
+
+  computed: {
+
+    editPlantIsOpen () {
+      return this.$store.state.editPlantIsOpen
+    },
+
+    targetPlant () {
+      // Return an empty species object.
+      return this.$store.state.targetPlant
+    }
+
+  },
+
+  mounted () {
+
   }
+
+}
 
 </script>
 

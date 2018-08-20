@@ -1,6 +1,7 @@
 """Provide an API endpoint for the QuoteMachine."""
 from database import *
 
+from bson import ObjectId
 from glob import glob
 import eventlet
 from eventlet import wsgi
@@ -19,6 +20,10 @@ PORT = 2005
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
+
+
+# Load flight summary data once, at start.
+flight_summary = flight_summaries()
 
 
 class Plants(Resource):
@@ -53,24 +58,38 @@ class Plant(Resource):
 class Images(Resource):
     """Manage all flights/dates."""
 
-    def get():
+    def get(self):
         """List all the available images."""
-        pass
+        return flight_summary
 
 
-# class Images(Resource):
-#     """Serve requested image."""
+class Image(Resource):
+    """Handle individual image information."""
 
-#     def get(Resource):
-#         """Return current image."""
-#         with open("dji_00001.png", "rb") as bites:
-#             return send_file(io.BytesIO(bites.read()), mimetype="image/png")
+    def get(self, image_id):
+        """Return data for the target image."""
+        _id = ObjectId(image_id)
+        doc = image_collection.find_one({"_id": _id})
+        doc["_id"] = str(doc["_id"])
+        doc["image_loc"] = doc["image_loc"].replace("'", "")
+        return doc
+
+
+class ImageServer(Resource):
+    """Serve requested image."""
+
+    def get(Resource):
+        """Return current image."""
+        with open("DJI_0206.JPG", "rb") as bites:
+            return send_file(io.BytesIO(bites.read()), mimetype="image/jpg")
 
 
 # ADD RESOURCE ROUTES.
 api.add_resource(Plants, "/plants", methods=["POST", "GET"])
 api.add_resource(Plant, "/plant/<plant_id>", methods=["PUT", "DELETE"])
 api.add_resource(Images, "/images", methods=["GET"])
+api.add_resource(Image, "/image/<image_id>", methods=["GET"])
+api.add_resource(ImageServer, "/imageserver", methods=["GET"])
 
 if __name__ == "__main__":
 

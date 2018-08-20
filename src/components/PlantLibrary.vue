@@ -23,39 +23,84 @@
           </v-tooltip>
         </v-toolbar>
 
-        <v-container>
-        <v-layout row wrap>
-          <v-flex xs12>
-            <v-expansion-panel>
-              <v-expansion-panel-content
-                v-for="(item,i) in structuralCategories"
-                :key="i"
-                style='background-color: #f0f0f0; color: #909090'
+        <v-layout>
+          <v-flex xs12 ma-3 elevation-2>
+            <v-card>
+              <v-card-title>
+                <h3>Available Plant Species</h3>
+                <v-spacer></v-spacer>
+                <v-text-field
+                  v-model="search"
+                  append-icon="search"
+                  label="Search"
+                  single-line
+                  hide-details
+                  >
+                </v-text-field>
+              </v-card-title>
+              <v-data-table
+                :headers="headers"
+                :items="plants"
+                :search="search"
                 >
-                <div slot="header"><h2>{{item.title}}s</h2></div>
-                <v-card>
-                  <v-card-text>
+                <template slot="items" slot-scope="props">
+                  <td class="text-xs-left">
+                    <v-btn :style=
+                    '{backgroundColor: props.item.color_code,
+                    color: textColor(props.item.color_code)}'>
+                      {{ props.item.scientific_name }}
+                    </v-btn>
+                  </td>
+                  <td class="text-xs-left">{{ props.item.common_name }}</td>
+                  <td class="text-xs-left">{{ props.item.physiognomy }}</td>
+                  <td class="text-xs-left">{{ props.item.category }}</td>
+                  <td class="text-xs-left">{{ props.item.species_codes }}</td>
+                  <td class="text-xs-left">{{ props.item.color_code }}</td>
+                  <td class="text-xs-left">
+                    <v-btn icon><v-icon>edit</v-icon></v-btn>
+                  </td>
+                </template>
+                <v-alert slot="no-results" :value="true" color="error" icon="warning">
+                  Your search for "{{ search }}" found no results.
+                </v-alert>
+              </v-data-table>
+            </v-card>
+          </v-flex>
+    </v-layout>
 
-                    <v-list
-                      two-lines
+        <!-- <v-container>
+          <v-layout row wrap>
+            <v-flex xs12>
+              <v-expansion-panel>
+                <v-expansion-panel-content
+                  v-for="(item,i) in structuralCategories"
+                  :key="i"
+                  style='background-color: #f0f0f0; color: #909090'
+                  >
+                  <div slot="header"><h2>{{item.title}}s</h2></div>
+                  <v-card>
+                    <v-card-text>
+
+                      <v-list
+                        two-lines
                       v-if="plantsByStructure[item.name.toLowerCase()].length>0">
 
                       <v-list-tile
                         v-for="(plant,k) in plantsByStructure[item.name.toLowerCase()]"
-                        :key="plant.scientificName+k"
+                        :key="plant.scientific_name+k"
                         avatar
                         class='clickable'
                         >
                         <v-list-tile-avatar @click='setPlant(plant)' >
                           <div
-                            v-bind:style='{backgroundColor: plant.annotationColor}'
+                            v-bind:style='{backgroundColor: plant.color_code}'
                             style='height:40px; width:40px; background-color: #ffcc33'>
                           </div>
                         </v-list-tile-avatar>
 
                         <v-list-tile-content >
                           <v-list-tile-title @click='setPlant(plant)' class='clickable'>
-                            {{plant.scientificName}} ({{plant.commonName}})
+                            {{plant.scientific_name}} ({{plant.common_name}})
                           </v-list-tile-title>
                         <v-divider></v-divider>
                         </v-list-tile-content>
@@ -86,7 +131,7 @@
           </v-flex>
 
         </v-layout>
-        </v-container>
+        </v-container> -->
       </v-card>
 
     </v-dialog>
@@ -109,11 +154,57 @@ export default {
 
   data () {
     return {
+      search: '',
       structuralCategories: [
         {name: 'tree', title: 'Tree'},
         {name: 'shrub', title: 'Shrub'},
         {name: 'graminoid', title: 'Graminoid'},
         {name: 'forb', title: 'Forb'}
+      ],
+      desserts: [{'scientific_name':'ice cream'}],
+      headers: [
+        {
+          text:'Scientific Name',
+          value: 'scientific_name',
+          align: 'left',
+          sortable: true
+        },
+        {
+          text:'Common Name',
+          value: 'common_name',
+          align: 'left',
+          sortable: true
+        },
+        {
+          text:'Physiognomy',
+          value: 'physiognomy',
+          align: 'left',
+          sortable: true
+        },
+        {
+          text:'Category',
+          value: 'category',
+          align: 'left',
+          sortable: true
+        },
+        {
+          text:'Species Code',
+          value: 'species_code',
+          align: 'left',
+          sortable: true
+        },
+        {
+          text:'Annotation Color',
+          value: 'species_code',
+          align: 'left',
+          sortable: false
+        },
+        {
+          text:'Edit Plant',
+          value: '',
+          align: 'left',
+          sortable: false
+        }
       ]
     }
   },
@@ -130,6 +221,28 @@ export default {
 
     closeLibrary () {
         this.$store.commit('closeLibrary')
+    },
+
+    textColor (color) {
+      if (color) {
+        function hexToRgb(hex) {
+          var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+          } : null;
+        }
+        var rgb = hexToRgb(color)
+        var r = rgb.r; var g = rgb.g; var b = rgb.b
+        if (r*0.299 + g*0.587 + b*0.114 > 127) {
+          return '#000000'
+        } else {
+          return '#ffffff'
+        }
+      } else {
+        return '#000000'
+      }
     },
 
     setPlant (plant) {
@@ -158,7 +271,8 @@ export default {
       return this.$store.state.libraryIsOpen
     },
 
-    plantsByStructure () {
+    plants() {
+      return this.$store.state.plantList
       return this.$store.state.plantsByStructure
     }
 

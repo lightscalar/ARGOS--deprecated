@@ -41,6 +41,14 @@ export default new Vuex.Store ({
 
     // Species variables.
     targetPlant: $.extend(true, {}, emptySpecies),
+    imageLocation: '',
+    imageServerUrl: 'http://localhost:2007',
+
+    // Image details.
+    latitude: 0,
+    longitude: 0,
+    altitude: 0,
+    orientation: 0,
 
     // emptySpecies: JSON.parse(JSON.stringify(emptySpecies)),
     emptyPlant: $.extend(true, {}, emptySpecies),
@@ -54,7 +62,10 @@ export default new Vuex.Store ({
       shrub: [],
       graminoid: [],
       forb: []
-    }
+    },
+
+    // Flight data/images/etc.
+    imageList: []
 
   },
 
@@ -66,15 +77,29 @@ export default new Vuex.Store ({
       // Also populate the plantsByStructure object.
       for (var i=0; i<plantList.length; i++) {
         var plant = plantList[i]
-        var structCat = plant.structuralCategory.toLowerCase()
-        state.plantsByStructure[structCat].push(plant)
+        var physiognomy = plant.physiognomy.toLowerCase()
+        state.plantsByStructure[physiognomy].push(plant)
       }
     },
 
+    setImageList(state, imageList) {
+      state.imageList = imageList
+    },
+
+    setImage(state, image) {
+      var img = image.image_loc
+      var imgArray = img.split('/')
+      state.imageLocation = '/' + imgArray.slice(-3).join('/')
+      state.latitude = Math.floor(image.metadata['Composite:GPSLatitude']*1000)/1000
+      state.longitude = Math.floor(image.metadata['Composite:GPSLongitude']*1000)/1000
+      state.altitude = Math.floor(image.metadata['XMP:RelativeAltitude']*3.28084*1000)/1000
+      state.orientation = Math.floor(image.metadata['MakerNotes:CameraYaw']*1000)/1000
+    },
+
     setPlant(state, plant) {
-      state.targetPlantName = plant.scientificName
+      state.targetPlantName = plant.scientific_name
       state.targetPlant = plant
-      state.annotationColor = plant.annotationColor
+      state.annotationColor = plant.color_code
     },
 
     setPlantName(state, plantName) {
@@ -82,7 +107,7 @@ export default new Vuex.Store ({
     },
 
     setPlantCategory(state, category) {
-      state.emptyPlant['structuralCategory'] = category
+      state.emptyPlant['physiognomy'] = category
     },
 
     openNewSpecies(state) {
@@ -136,8 +161,19 @@ export default new Vuex.Store ({
 
     listPlants (context) {
       api.listResource('plants').then( function (resp) {
-        console.log(resp.data)
         context.commit('setPlantList', resp.data)
+      })
+    },
+
+    listImages (context) {
+      api.listResource('images').then( function (resp) {
+        context.commit('setImageList', resp.data)
+      })
+    },
+
+    getImage (context, id) {
+      api.getResource('image', id).then( function (resp) {
+        context.commit('setImage', resp.data)
       })
     },
 
