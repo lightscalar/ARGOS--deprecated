@@ -1,12 +1,17 @@
 """Utilities for getting at ground truth GPS information."""
 from database import *
+from geo_utils import *
+from vessel import Vessel
 
 from ipdb import set_trace as debug
 import fiona
+from geopy.distance import distance
 import numpy as np
 import re
 import pandas as pd
 import seaborn as sns
+from sklearn.neighbors import BallTree
+from tqdm import tqdm
 
 
 # Define regular expression for extracting species code.
@@ -48,7 +53,6 @@ plant_collection.delete_many({})
 plant_collection.insert_many(plants)
 
 
-
 def extract_ground_truth(shape_file="ground_truth/CZM_UAV_WAYPOINTS_2018.shp"):
     """Extract information from the shape files."""
     shapes = fiona.open(shape_file)
@@ -57,6 +61,10 @@ def extract_ground_truth(shape_file="ground_truth/CZM_UAV_WAYPOINTS_2018.shp"):
     for shape in shapes:
         truth = {}
         truth["geolocation"] = shape["geometry"]["coordinates"]
+        truth["latlon"] = (
+            shape["geometry"]["coordinates"][1],
+            shape["geometry"]["coordinates"][0],
+        )
         truth["name"] = shape["properties"]["Name"]
         truth["species_code"] = re.search(REG_EXP, truth["name"])[1]
         truth["symbol"] = shape["properties"]["Symbol"]
@@ -65,7 +73,63 @@ def extract_ground_truth(shape_file="ground_truth/CZM_UAV_WAYPOINTS_2018.shp"):
     return truths
 
 
+def location_from_image(img):
+    """Extract GPS coordinates from the image metadata."""
+    return (
+        img["metadata"]["Composite:GPSLatitude"],
+        img["metadata"]["Composite:GPSLongitude"],
+    )
+
+
+def location_from_truth(truth):
+    """Extract geolocation from ground truth measurement."""
+    return truth["latlon"]
+
+
+def find_all_images(tree, imgs, truth_locations, truths):
+    """Find all images that contain each ground truth location."""
+    v = Vessel('ground_truth.dat')
+    for idx, truth in tqdm(enumerate(truths)):
+        loc = [truth_locations[idx, :]]
+        truth["images"] = []
+        _, candidates = tree.query(loc, k=100)
+        for candidate in candidates[0]:
+            if in_image(loc[0], imgs[candidate]["image_loc"]):
+                truth["images"].append(imgs[candidate]["_id"])
+            else:
+                v.truths = truths
+                v.save()
+                break
+
+
 if __name__ == "__main__":
 
     # Get that truth out!
     truths = extract_ground_truth()
+    imgs = image_collection.find(
+        {},
+        {
+            "metadata.Composite:GPSLatitude": 1,
+            "metadata.Composite:GPSLongitude": 1,
+            "image_loc": 1,
+        },
+    )
+
+    # Generate the images.
+    imgs = list(imgs)
+
+    # Generate lat/lon from images.
+    image_locations = []
+    truth_locations = []
+    for img in imgs:
+        image_locations.append(location_from_image(img))
+
+    for truth in truths:
+        truth_locations.append(location_from_truth(truth))
+
+    image_locations = np.array(image_locations)
+    truth_locations = np.array(truth_locations)
+    tree = BallTree(image_locations)
+
+    # Process the truth!
+    find_all_images(tree, imgs, truth_locations, truths)
