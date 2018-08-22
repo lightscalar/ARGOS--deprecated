@@ -88,7 +88,7 @@ def location_from_truth(truth):
 
 def find_all_images(tree, imgs, truth_locations, truths):
     """Find all images that contain each ground truth location."""
-    v = Vessel('ground_truth.dat')
+    v = Vessel("ground_truth.dat")
     for idx, truth in tqdm(enumerate(truths)):
         loc = [truth_locations[idx, :]]
         truth["images"] = []

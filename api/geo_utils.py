@@ -63,8 +63,10 @@ def pixel_to_lat_lon(row, col, image_file):
     dn_in_meters = np.dot(pixel_vector, n) * meters_per_pixel
     de_in_meters = np.dot(pixel_vector, e) * meters_per_pixel
 
-    dn_in_degrees = dn_in_meters / meters_per_degree 
-    de_in_degrees = dn_in_meters / (meters_per_degree * np.cos(d['img_lat'] * np.pi/180))
+    dn_in_degrees = dn_in_meters / meters_per_degree
+    de_in_degrees = dn_in_meters / (
+        meters_per_degree * np.cos(d["img_lat"] * np.pi / 180)
+    )
     lat = d["img_lat"] + dn_in_degrees
     lon = d["img_lon"] + de_in_degrees
     return lat, lon
@@ -111,4 +113,4 @@ if __name__ == "__main__":
 
     img = image_collection.find_one()
 
-    lat, lon = pixel_to_lat_lon(200, 2000, img['image_loc'])
+    lat, lon = pixel_to_lat_lon(200, 2000, img["image_loc"])
