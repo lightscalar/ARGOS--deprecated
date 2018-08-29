@@ -24,6 +24,11 @@ flight_collection = db.flights
 image_collection = db.images
 
 
+def get_image(image_id):
+    """Return the image object corresponding to the image id."""
+    return image_collection.find_one({"_id": image_id})
+
+
 def create_plant(plant):
     """Insert a new species into the database."""
     plant = plant_collection.insert_one(plant)
@@ -98,7 +103,9 @@ def flight_summaries():
             for img in flight_images:
                 img["_id"] = str(img["_id"])
                 img["image_loc_short"] = os.path.basename(img["image_loc"])
-            this_flight["images"] = sorted(flight_images, key=lambda x:x['image_loc_short'])
+            this_flight["images"] = sorted(
+                flight_images, key=lambda x: x["image_loc_short"]
+            )
             on_this_day["flights"].append(this_flight)
         data.append(on_this_day)
     return data

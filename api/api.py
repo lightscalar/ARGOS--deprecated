@@ -1,5 +1,6 @@
 """Provide an API endpoint for the QuoteMachine."""
 from database import *
+from match_groundtruth import *
 
 from bson import ObjectId
 from glob import glob
@@ -23,7 +24,23 @@ api = Api(app)
 
 
 # Load flight summary data once, at start.
+print("> Building flight summaries.")
 flight_summary = flight_summaries()
+
+# Get truth from GPS downloads.
+print("> Processing ground truth.")
+truths = extract_ground_truth()
+
+# Build a Ball Tree for querying things.
+truth_locations = []
+for truth in truths:
+    truth_locations.append(location_from_truth(truth))
+
+# Get locations.
+print("> Building ball tree for distance queries.")
+truth_locations = np.array(truth_locations)
+truth_tree = BallTree(truth_locations, metric=distance_on_earth)
+print("> Good to go.")
 
 
 class Plants(Resource):
@@ -70,9 +87,24 @@ class Image(Resource):
         """Return data for the target image."""
         _id = ObjectId(image_id)
         doc = image_collection.find_one({"_id": _id})
+
+        # Lazily generate ground truth information.
+        gtm = GroundTruthMatcher(doc, truths, truth_tree)
+
+        # Reload updated image document.
+        doc = image_collection.find_one({"_id": _id})
         doc["_id"] = str(doc["_id"])
         doc["image_loc"] = doc["image_loc"].replace("'", "")
         return doc
+
+
+class PlantSample(Resource):
+    """Get collection of sample images for plant."""
+
+    def get(self, plant_code):
+        """Return a list of all plant sample images."""
+        available_files = glob(f"{THUMBNAIL_LOCATION}/{plant_code}/*.png")
+        return available_files[:100]
 
 
 class ImageServer(Resource):
@@ -90,6 +122,7 @@ api.add_resource(Plant, "/plant/<plant_id>", methods=["PUT", "DELETE"])
 api.add_resource(Images, "/images", methods=["GET"])
 api.add_resource(Image, "/image/<image_id>", methods=["GET"])
 api.add_resource(ImageServer, "/imageserver", methods=["GET"])
+api.add_resource(PlantSample, "/plantsample/<plant_code>", methods=["GET"])
 
 if __name__ == "__main__":
 
