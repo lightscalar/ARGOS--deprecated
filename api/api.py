@@ -95,6 +95,8 @@ class Image(Resource):
         doc = image_collection.find_one({"_id": _id})
         doc["_id"] = str(doc["_id"])
         doc["image_loc"] = doc["image_loc"].replace("'", "")
+        if "annotations" not in doc:
+            doc["annotations"] = []
         return doc
 
     def put(self, image_id):
