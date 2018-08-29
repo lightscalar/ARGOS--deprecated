@@ -3,18 +3,25 @@
   <v-card class='sidebar'>
     <v-card-actions>
       <v-tooltip bottom>
-      <v-btn
-        slot='activator'
-        icon dark
-        style="background-color: #008066; color=white; margin-right:5px"
-        class='text--white'>
-        <v-icon>undo</v-icon>
-      </v-btn>
-      <span>Undo the last annotation.</span>
+        <v-btn
+          @click='undoAnnotation'
+          slot='activator'
+          icon dark
+          style="background-color: #008066; color=white; margin-right:5px"
+          class='text--white'>
+          <v-icon>undo</v-icon>
+        </v-btn>
+        <span>Undo the last annotation.</span>
       </v-tooltip>
-      <v-btn icon dark style="background-color: #008066; color=white" class='text--white'>
-        <v-icon>delete_forever</v-icon>
-      </v-btn>
+      <v-tooltip bottom>
+        <v-btn
+          slot='activator'
+          @click='deleteAll'
+          icon dark style="background-color: #008066; color=white" class='text--white'>
+          <v-icon>delete_forever</v-icon>
+        </v-btn>
+        <span>Delete all annotations on this image.</span>
+      </v-tooltip>
       <v-spacer></v-spacer>
       <v-btn
         @click.native='prevImage'
@@ -40,61 +47,46 @@
         >
       </v-select>
 
-      <v-select
-        label='Flight Location'
-        :disabled='selectedDate.length<1'
-        :items="selectedDate"
-        item-text="flight_name"
-        item-value='images'
-        outline
-        v-model='selectedFlight'
-        >
-      </v-select>
+        <v-select
+          label='Flight Location'
+          :disabled='selectedDate.length<1'
+          :items="selectedDate"
+          item-text="flight_name"
+          item-value='images'
+          outline
+          v-model='selectedFlight'
+          >
+        </v-select>
 
-      <v-select
-        label='Available Images'
-        :disabled='selectedDate.length<1'
-        :items="selectedFlight"
-        item-text="image_loc_short"
-        item-value='_id'
-        v-model='selectedImage'
-        outline
-        @change='updateImageData'
-        >
-
-      </v-select>
-    <v-divider></v-divider>
-    <v-list dense>
-      <v-list-tile>
-        <v-list-tile-content><h3>Latitude</h3></v-list-tile-content>
-        <v-list-tile-content class="align-end"><h4>{{latitude}}</h4></v-list-tile-content>
-      </v-list-tile>
-      <v-list-tile>
-        <v-list-tile-content><h3>Longitude</h3></v-list-tile-content>
-        <v-list-tile-content class="align-end"><h4>{{longitude}}</h4></v-list-tile-content>
-      </v-list-tile>
-      <v-list-tile>
-        <v-list-tile-content><h3>Altitude (ft)</h3></v-list-tile-content>
-        <v-list-tile-content class="align-end"><h4>{{altitude}}</h4></v-list-tile-content>
-      </v-list-tile>
-      <v-list-tile>
-        <v-list-tile-content><h3>Orientation</h3></v-list-tile-content>
-        <v-list-tile-content class="align-end"><h4>{{orientation}}</h4></v-list-tile-content>
-      </v-list-tile>
-    </v-list>
+          <v-select
+            label='Available Images'
+            :disabled='selectedDate.length<1'
+            :items="selectedFlight"
+            item-text="image_loc_short"
+            item-value='_id'
+            outline
+            v-model='selectedImage'
+            @change='updateImageData'
+            >
+          </v-select>
 
     </v-card-text>
+
+    <info-dialog></info-dialog>
+
   </v-card>
+
 
 
 </template>
 
 <script>
   // import Component from "../component_location"
+import InfoDialog from "./InfoDialog"
 
   export default {
 
-    components: {},
+    components: {InfoDialog},
 
     props: [],
 
@@ -108,9 +100,22 @@
 
     watch: {
 
+
     },
 
     methods: {
+
+      deleteAll () {
+        this.$emit('delete')
+      },
+
+      undoAnnotation () {
+        this.$emit('undo')
+      },
+
+      openInfo () {
+        this.$store.commit('openInfo')
+      },
 
       updateImageData () {
         this.$store.dispatch('getImage', this.selectedImage)
@@ -146,10 +151,6 @@
         }
       },
 
-
-
-
-
     },
 
     computed: {
@@ -173,6 +174,15 @@
       orientation () {
         return this.$store.state.orientation
       },
+
+      sampleImages () {
+        return []
+        return this.$store.state.sampleImages
+      },
+
+      image () {
+        return this.$store.state.image
+      }
 
     },
 

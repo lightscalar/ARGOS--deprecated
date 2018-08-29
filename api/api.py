@@ -97,6 +97,13 @@ class Image(Resource):
         doc["image_loc"] = doc["image_loc"].replace("'", "")
         return doc
 
+    def put(self, image_id):
+        """Update the image."""
+        _id = ObjectId(image_id)
+        image = request.json
+        update_image(image)
+        return image
+
 
 class PlantSample(Resource):
     """Get collection of sample images for plant."""
@@ -120,9 +127,10 @@ class ImageServer(Resource):
 api.add_resource(Plants, "/plants", methods=["POST", "GET"])
 api.add_resource(Plant, "/plant/<plant_id>", methods=["PUT", "DELETE"])
 api.add_resource(Images, "/images", methods=["GET"])
-api.add_resource(Image, "/image/<image_id>", methods=["GET"])
+api.add_resource(Image, "/image/<image_id>", methods=["GET", "PUT"])
 api.add_resource(ImageServer, "/imageserver", methods=["GET"])
 api.add_resource(PlantSample, "/plantsample/<plant_code>", methods=["GET"])
+
 
 if __name__ == "__main__":
 

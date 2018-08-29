@@ -21,16 +21,6 @@
         <span>Current annotation species—click to change</span>
       </v-tooltip>
 
-      <!-- <v-tooltip bottom> -->
-      <!--   <v-btn slot='activator' -->
-      <!--          @click.native='openNewSpecies' -->
-      <!--          class='mr-1' -->
-      <!--          icon -->
-      <!--          style='background-color:#ffffff; color: #008066'> -->
-      <!--     <v-icon>add</v-icon></v-btn> -->
-      <!--   <span>Add a new species</span> -->
-      <!-- </v-tooltip> -->
-
     </v-toolbar>
 
     <v-content>
@@ -46,7 +36,17 @@
 
     <!-- MODALS -->
     <new-plant></new-plant>
-    <plant-library></plant-library>
+  <plant-library></plant-library>
+
+  <v-snackbar top v-model='waiting'>
+    <v-icon dark>access_time</v-icon>
+    <h3>Please Wait. Loading Image.</h3>
+  </v-snackbar>
+
+  <v-snackbar top color='error' v-model='showError'>
+    <v-icon dark style='margin-right: 10px'>error_outline</v-icon>
+    <h3>{{errorMessage}}</h3>
+  </v-snackbar>
 
   </v-app>
 
@@ -65,11 +65,29 @@ export default {
   name: 'App',
   data () {
     return {
-      color: '#ffcc33'
+      color: '#ffcc33',
+      error: true
     }
   },
 
   computed: {
+
+    showError: {
+      get: function () {
+        return this.$store.state.showError
+      },
+      set: function () {
+        this.$store.commit('errorOff')
+      }
+    },
+
+    errorMessage () {
+      return this.$store.state.errorMessage
+    },
+
+    waiting () {
+      return this.$store.state.waiting
+    },
 
     codeColor () {
       return this.$store.state.annotationColor

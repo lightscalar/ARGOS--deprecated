@@ -47,17 +47,20 @@
                   <td class="text-xs-left">
                     <v-btn :style=
                     '{backgroundColor: props.item.color_code,
-                    color: textColor(props.item.color_code)}'>
+                    color: textColor(props.item.color_code)}'
+                      @click='setPlant(props.item)'
+                    style='min-width: 330px'>
                       {{ props.item.scientific_name }}
                     </v-btn>
                   </td>
                   <td class="text-xs-left">{{ props.item.common_name }}</td>
                   <td class="text-xs-left">{{ props.item.physiognomy }}</td>
                   <td class="text-xs-left">{{ props.item.category }}</td>
-                  <td class="text-xs-left">{{ props.item.species_codes }}</td>
+                  <td class="text-xs-left">{{ props.item.species_codes[0] }}</td>
                   <td class="text-xs-left">{{ props.item.color_code }}</td>
                   <td class="text-xs-left">
-                    <v-btn icon><v-icon>edit</v-icon></v-btn>
+                    <v-btn icon @click.native='editPlant(props.item)'>
+                      <v-icon>edit</v-icon></v-btn>
                   </td>
                 </template>
                 <v-alert slot="no-results" :value="true" color="error" icon="warning">
@@ -189,7 +192,7 @@ export default {
         },
         {
           text:'Species Code',
-          value: 'species_code',
+          value: 'species_code[0]',
           align: 'left',
           sortable: true
         },
@@ -248,6 +251,7 @@ export default {
     setPlant (plant) {
       console.log('Setting.')
       this.$store.commit('setPlant', plant)
+      this.$store.dispatch('getSamples', plant.species_codes[0])
       this.closeLibrary()
     },
 

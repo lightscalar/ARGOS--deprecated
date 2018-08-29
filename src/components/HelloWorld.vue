@@ -5,9 +5,6 @@
 
       <v-flex xs8 @click.native='clicked' pa-2>
         <div id='zoombox' style='position: relative'>
-          <!-- <img id='image' src='static/images/dji_00001.png' -->
-          <!--      style='border: 4px solid #888888' -->
-          <!--      width='100%'> -->
           <img id='image'
                v-if='imageLocation != "NO_IMAGE"'
                :src="imageLocation"
@@ -22,7 +19,10 @@
       </v-flex>
 
       <v-flex xs4>
-        <flight-library></flight-library>
+        <flight-library
+          v-on:undo='undoAnnotation'
+          v-on:delete='deleteAllAnnotations'>
+        </flight-library>
       </v-flex>
 
     </v-layout>
@@ -49,54 +49,136 @@
         boxWidth: 50,
         dialog: false,
         targetSpecies: null,
-        annotations: [],
-        tagColor: '#8E24AA'
+        groundTruthPoints: []
       }
     },
 
     watch: {
 
+      image: function () {
+        this.updateGroundTruth()
+        this.updateAnnotations()
+      }
+
     },
 
     methods: {
 
-      addZoom() {
+      updateAnnotations () {
+        $('.annotation').remove()
+        //Insert annotation tag into image.
+        console.log('Here is the new image:')
+        console.log(this.image)
+        for (var k=0; k<this.image.annotations.length; k++) {
+          this.plotAnnotation(this.image.annotations[k])
+        }
+      },
+
+      updateGroundTruth () {
+        var truths = this.image.ground_truth
+        var width = $('#image').width()
+        var height = $('#image').height()
+        this.removeAllGroundTruthPoints()
+        for (var k=0; k < truths.length; k++) {
+          console.log(truths[k])
+          var row = parseInt(truths[k].position_in_image[0] * height/3000)
+          var col = parseInt(truths[k].position_in_image[1] * width/4000)
+          var id = col + 'gt' + row
+          var div = '<div id='+id+'></div>'
+          //$('#zoombox').append('<div id='+id+' tooltip="'+truths[k].scientific_name+'"></div>')
+          $('#zoombox').append(div)
+          $('#'+id).css({'background-color': this.colorMap[truths[k].scientific_name]})
+          $('#'+id).css({'position': 'absolute'})
+          $('#'+id).css({'border-radius': '50%'})
+          $('#'+id).css({'height': '20px'})
+          $('#'+id).css({'width': '20px'})
+          $('#'+id).css({'top': row - 10})
+          $('#'+id).css({'left': col - 10})
+          this.groundTruthPoints.push(id)
+        }
+
+      },
+
+      removeAllGroundTruthPoints () {
+
+        for (var k=0; k < this.groundTruthPoints.length; k++) {
+          var id = this.groundTruthPoints[k]
+          $('#'+id).remove()
+        }
+        this.groundTruthPoints = []
+
+      },
+
+      addZoom () {
         $('#image').elevateZoom({scrollZoom: true, tint: true, tintOpacity: 0.1})
+        $(document).unbind('click')
         $(document).bind('click', '#zoomPicture', this.imageClicked)
+        this.updateGroundTruth()
       },
 
       clicked (evt) {
       },
 
       undoAnnotation () {
-        if (this.annotations.length>0) {
-          var garbage = this.annotations.pop()
-          var id = garbage.x + '-' + garbage.y
+        if (this.image.annotations.length>0) {
+          var garbage = this.image.annotations.pop()
+          var id = garbage.col + '-' + garbage.row
+          $('#'+id).remove()
+          this.saveImage()
+        }
+      },
+
+      deleteAllAnnotations () {
+        for (var k=0; k<this.image.annotations.length; k++) {
+          var garbage = this.image.annotations[k]
+          var id = garbage.col + '-' + garbage.row
           $('#'+id).remove()
         }
+        this.image.annotations = []
+        this.saveImage()
       },
 
       changedSpecies (species) {
         this.$store.commit('setTargetSpecies', species)
       },
 
+      plotAnnotation (annotation) {
+        var id = annotation.col + '-' + annotation.row
+        var tagColor = this.$store.state.colorMap[annotation.scientific_name]
+        $('#zoombox').append('<div id=' + id + ' class="annotation"></div>')
+        $('#'+id).css({'background-color': this.colorMap[annotation.plant]})
+        $('#'+id).css({'opacity': 0.5})
+        $('#'+id).css({'position': 'absolute'})
+        $('#'+id).css({'top': annotation.row - this.boxWidth/2,
+          'left': annotation.col - this.boxWidth/2})
+        $('#'+id).css({'width': this.boxWidth, 'height': this.boxWidth})
+
+      },
+
       addTag() {
+        if (this.$store.state.targetPlantName == 'Click Here to Set Plant Species') {
+          // Don't annotate nothin'.
+          this.$store.commit('errorOn', 'Please select a plant species to begin annotation.')
+          return
+        }
         var id = this.selectedX + '-' +  this.selectedY
-        $('#zoombox').append('<div id=' + id + '></div>')
+        $('#zoombox').append('<div id=' + id + ' class="annotation"></div>')
         $('#'+id).css({'background-color': this.tagColor})
-        $('#'+id).css({'opacity': 0.3})
+        $('#'+id).css({'opacity': 0.5})
         $('#'+id).css({'position': 'absolute'})
         $('#'+id).css({'top': this.selectedY-this.boxWidth/2,
           'left': this.selectedX-this.boxWidth/2})
         $('#'+id).css({'width': this.boxWidth, 'height': this.boxWidth})
-        console.log(this.selectedX)
-        console.log(this.selectedY)
         var annotation = {
-          x: this.selectedX,
-          y: this.selectedY,
-          species: this.targetSpecies
+          col: this.selectedX,
+          row: this.selectedY,
+          plant: this.$store.state.targetPlantName,
+          imageWidth: $('#image').width(),
+          imageHeight: $('#image').height(),
         }
-        this.annotations.push(annotation)
+        this.image.annotations.push(annotation)
+        this.saveImage()
+        console.log(this.image)
       },
 
       imageClicked(e) {
@@ -112,6 +194,11 @@
             this.addTag()
           }
         }
+      },
+
+      saveImage () {
+        console.log('Saving Image!')
+        this.$store.dispatch('updateImage', this.image)
       }
     },
 
@@ -127,6 +214,18 @@
         } else {
           return 'NO_IMAGE'
         }
+      },
+
+      tagColor () {
+        return this.$store.state.annotationColor
+      },
+
+      image () {
+        return this.$store.state.image
+      },
+
+      colorMap () {
+        return this.$store.state.colorMap
       }
 
     },

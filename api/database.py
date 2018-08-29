@@ -29,6 +29,13 @@ def get_image(image_id):
     return image_collection.find_one({"_id": image_id})
 
 
+def update_image(image):
+    """Update existing image in Mongo database."""
+    _id = {"_id": ObjectId(image["_id"])}
+    del image["_id"]
+    image_collection.update_one(_id, {"$set": image}, upsert=False)
+
+
 def create_plant(plant):
     """Insert a new species into the database."""
     plant = plant_collection.insert_one(plant)

@@ -52,7 +52,7 @@
               </v-flex>
               <v-flex xs6>
                 <v-text-field
-                  v-model='targetPlant.annotationColor'
+                  v-model='targetPlant.color_code'
                   outline
                   label='Annotation Color'>
                 </v-text-field>
@@ -62,7 +62,7 @@
                   style='height: 58px; width: 100%'
                   type='color'
                   value = '#ffcc33'
-                  v-model='targetPlant.annotationColor'>
+                  v-model='targetPlant.color_code'>
               </v-flex>
             </v-layout>
           </v-container>
