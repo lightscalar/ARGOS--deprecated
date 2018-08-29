@@ -22,36 +22,6 @@ np.random.seed(0)
 colors = list(sns.xkcd_rgb.keys())
 np.random.shuffle(colors)
 
-# Load the GPS key.
-gps_key = pd.read_excel("ground_truth/GPS_KEY_08_11_2018.xlsx")
-unique_species = np.unique(list(gps_key["Scientific Name"]))
-plants = []
-for scientific_name in unique_species:
-    if scientific_name != "nan":
-        plant = {}
-        plant["scientific_name"] = scientific_name
-        plant["species_codes"] = set([])
-        for idx, name in enumerate(gps_key["Scientific Name"]):
-            if name == scientific_name:
-                plant["common_name"] = gps_key["Common Name"][idx]
-                plant["physiognomy"] = gps_key["PHYSIOGNOMY"][idx]
-                plant["category"] = gps_key["CATEGORY"][idx]
-                plant["color_code"] = sns.xkcd_rgb[colors[idx]]
-                codes = gps_key["Code"][idx].split(" ")
-                for code in codes:
-                    plant["species_codes"].add(code)
-        plants.append(plant)
-    else:
-        continue
-
-# Get rid of sets.
-for plant in plants:
-    plant["species_codes"] = list(plant["species_codes"])
-
-# Add plants to the database.
-plant_collection.delete_many({})
-plant_collection.insert_many(plants)
-
 
 def extract_ground_truth(shape_file="ground_truth/CZM_UAV_WAYPOINTS_2018.shp"):
     """Extract information from the shape files."""
@@ -104,32 +74,32 @@ def find_all_images(tree, imgs, truth_locations, truths):
 
 if __name__ == "__main__":
 
-    # Get that truth out!
-    truths = extract_ground_truth()
-    imgs = image_collection.find(
-        {},
-        {
-            "metadata.Composite:GPSLatitude": 1,
-            "metadata.Composite:GPSLongitude": 1,
-            "image_loc": 1,
-        },
-    )
+    # Load the GPS key.
+    gps_key = pd.read_excel("ground_truth/GPS_KEY_08_11_2018.xlsx")
+    unique_species = np.unique(list(gps_key["Scientific Name"]))
+    plants = []
+    for scientific_name in unique_species:
+        if scientific_name != "nan":
+            plant = {}
+            plant["scientific_name"] = scientific_name
+            plant["species_codes"] = set([])
+            for idx, name in enumerate(gps_key["Scientific Name"]):
+                if name == scientific_name:
+                    plant["common_name"] = gps_key["Common Name"][idx]
+                    plant["physiognomy"] = gps_key["PHYSIOGNOMY"][idx]
+                    plant["category"] = gps_key["CATEGORY"][idx]
+                    plant["color_code"] = sns.xkcd_rgb[colors[idx]]
+                    codes = gps_key["Code"][idx].split(" ")
+                    for code in codes:
+                        plant["species_codes"].add(code)
+            plants.append(plant)
+        else:
+            continue
 
-    # Generate the images.
-    imgs = list(imgs)
+    # Get rid of sets.
+    for plant in plants:
+        plant["species_codes"] = list(plant["species_codes"])
 
-    # Generate lat/lon from images.
-    image_locations = []
-    truth_locations = []
-    for img in imgs:
-        image_locations.append(location_from_image(img))
-
-    for truth in truths:
-        truth_locations.append(location_from_truth(truth))
-
-    image_locations = np.array(image_locations)
-    truth_locations = np.array(truth_locations)
-    tree = BallTree(image_locations)
-
-    # Process the truth!
-    find_all_images(tree, imgs, truth_locations, truths)
+    # Add plants to the database.
+    plant_collection.delete_many({})
+    plant_collection.insert_many(plants)
