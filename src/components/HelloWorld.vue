@@ -234,6 +234,7 @@
       $('#image').elevateZoom({scrollZoom: true, tint: true, tintOpacity: 0.1})
       this.targetSpecies = this.$store.state.targetSpecies
     }
+
   }
 
 </script>

@@ -37,7 +37,7 @@ if __name__ == "__main__":
     sr = osr.SpatialReference()
     sr.SetWellKnownGeogCS("WGS84")
 
-    ds.SetGCPs(sr.ExportToWkt())
+    # ds.SetGCPs(sr.ExportToWkt())
     ds.SetGCPs(gcps, sr.ExportToWkt())
     # ds.SetProjection(sr.ExportToWkt())
     # ds.SetGeoTransform(gdal.GCPsToGeoTransform(gcps))

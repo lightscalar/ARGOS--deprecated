@@ -8,10 +8,6 @@ from geopy.distance import distance
 import numpy as np
 
 
-# Define necessary constants.
-meters_per_degree = 111131.745
-
-
 def distance_on_earth(a, b):
     """Find the distance (in meters) between two points on the Earth."""
     return distance(a, b).meters
@@ -42,6 +38,7 @@ def unit_vectors(exif_obj):
     lat, lon = exif_obj["img_lat"], exif_obj["img_lon"]
     declination = geomag.declination(lat, lon)
     camera_yaw -= declination  # compensate for magnetic variation
+    print(camera_yaw)
     alpha = -camera_yaw * np.pi / 180
     n = [-np.cos(alpha), -np.sin(alpha)]
     e = [-np.sin(alpha), np.cos(alpha)]
