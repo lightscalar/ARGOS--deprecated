@@ -93,6 +93,8 @@ class Image(Resource):
 
         # Reload updated image document.
         doc = image_collection.find_one({"_id": _id})
+        if ground_truth not in doc:
+            doc['ground_truth'] = []
         doc["_id"] = str(doc["_id"])
         doc["image_loc"] = doc["image_loc"].replace("'", "")
         if "annotations" not in doc:
