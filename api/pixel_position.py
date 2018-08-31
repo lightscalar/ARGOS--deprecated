@@ -57,11 +57,9 @@ if __name__ == '__main__':
     # Example.
     ds = gdal.Open('MinerStreetSmall.tif')
 
-    lon, lat = pixel_to_coord(ds, ds.RasterXSize, ds.RasterYSize)
+    lon, lat, _ = pixel_to_coord(ds, ds.RasterXSize, ds.RasterYSize)
     print(f'Raster size (x, y): {ds.RasterXSize}, {ds.RasterYSize}')
+    print(f'With pixel offset: {lon}, {lat}')
 
-    transform = transform_geodetic_to_latlon(ds, lon, lat)
-    print(f'With pixel offset: {transform}')
-
-    print(f'Column, row: {coord_to_pixel(ds, transform[0], transform[1])}')
+    print(f'Column, row: {coord_to_pixel(ds, lon, lat)}')
     print('Should be the same as the raster size.')
