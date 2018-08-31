@@ -4,10 +4,11 @@
 
 '''
 
-from osgeo import gdal, osr, ogr
+from osgeo import gdal, osr
 
 
 def transform_geodetic_to_latlon(ds, x, y):
+    '''Transform geodetic coordinates to latitude, longitude, altitude tuples.'''
 
     source = osr.SpatialReference()
     source.ImportFromWkt(ds.GetProjection())
@@ -20,6 +21,7 @@ def transform_geodetic_to_latlon(ds, x, y):
 
 
 def pixel_to_coord(ds, col, row):
+    '''Convert column and row indices to geodetic coordinates.'''
 
     x_upper_left, xres, xskew, y_upper_left, yskew, yres = ds.GetGeoTransform()
 
@@ -31,6 +33,7 @@ def pixel_to_coord(ds, col, row):
 
 if __name__ == '__main__':
 
+    # Example.
     ds = gdal.Open('MinerStreetSmall.tif')
 
     x_upper_left, xres, xskew, y_upper_left, yskew, yres = ds.GetGeoTransform()
