@@ -24,7 +24,9 @@ def pixel_to_coord(ds, col, row):
     target.ImportFromEPSG(4326)
 
     transform = osr.CoordinateTransformation(source, target)
-    return transform.TransformPoint(lon, lat)
+    result = transform.TransformPoint(lon, lat)
+
+    return result[0], result[1]
 
 
 def coord_to_pixel(ds, lon, lat):
