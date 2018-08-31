@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # Example.
     ds = gdal.Open('MinerStreetSmall.tif')
 
-    lon, lat, _ = pixel_to_coord(ds, ds.RasterXSize, ds.RasterYSize)
+    lon, lat = pixel_to_coord(ds, ds.RasterXSize, ds.RasterYSize)
     print(f'Raster size (x, y): {ds.RasterXSize}, {ds.RasterYSize}')
     print(f'With pixel offset: {lon}, {lat}')
 
