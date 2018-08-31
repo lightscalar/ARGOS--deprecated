@@ -8,6 +8,8 @@ saved_category_model/
 saved_model/
 *.hdf5
 *.h5
+*.tif
+*.swp
 
 # MAC
 *.DS_Store
