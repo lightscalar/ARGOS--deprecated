@@ -8,18 +8,6 @@ from osgeo import gdal, osr
 import numpy as np
 
 
-def transform_geodetic_to_latlon(ds, x, y):
-    '''Transform geodetic coordinates to latitude, longitude, altitude tuples.'''
-
-    source = osr.SpatialReference()
-    source.ImportFromWkt(ds.GetProjection())
-
-    target = osr.SpatialReference()
-    target.ImportFromEPSG(4326)
-
-    transform = osr.CoordinateTransformation(source, target)
-    return transform.TransformPoint(x, y)
-
 
 def pixel_to_coord(ds, col, row):
     '''Convert column and row indices to geodetic coordinates.'''
@@ -29,7 +17,14 @@ def pixel_to_coord(ds, col, row):
     lon = (xres * col) + (xskew * row) + x_upper_left
     lat = (yskew * col) + (yres * row) + y_upper_left
 
-    return lon, lat
+    source = osr.SpatialReference()
+    source.ImportFromWkt(ds.GetProjection())
+
+    target = osr.SpatialReference()
+    target.ImportFromEPSG(4326)
+
+    transform = osr.CoordinateTransformation(source, target)
+    return transform.TransformPoint(lon, lat)
 
 
 def coord_to_pixel(ds, lon, lat):
