@@ -169,7 +169,7 @@ def match_image_to_map(image_filename, map_filename, make_picture=False):
     return M, image_lower, image_left, map_lower, map_left
 
 
-class GeoReference(object):
+class GeoReferencer(object):
     """High accuracy georeferencing of image to an orthoreferenced map via homograhy."""
 
     def __init__(self, image_filename, map_filename):
@@ -214,4 +214,4 @@ if __name__ == "__main__":
     image_filename = "DJI_0468.JPG"
 
     homography = match_image_to_map(image_filename, map_filename, make_picture=True)
-    gr = GeoReference(image_filename, map_filename)
+    gr = GeoReferencer(image_filename, map_filename)
